@@ -1,6 +1,10 @@
 package com.jyotimoykashyap.dragspring.ui
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -10,12 +14,14 @@ import androidx.core.view.doOnLayout
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jyotimoykashyap.dragspring.model.ApiResponse
 import com.jyotimoykashyap.dragspring.repository.RestRepository
 import com.jyotimoykashyap.dragspring.util.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
@@ -32,6 +38,7 @@ class DragViewModel(
 
     // animation variables
     private lateinit var ballAnimY: SpringAnimation
+    private lateinit var viewSlideDown: ObjectAnimator
 
     init {
         view.doOnLayout {
@@ -48,16 +55,34 @@ class DragViewModel(
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    fun detectDragOnView(dropView: View) = viewModelScope.launch {
+    @SuppressLint("ClickableViewAccessibility", "Recycle")
+    fun detectDragOnView(dropView: View, screenHeight: Float) = viewModelScope.launch {
         startX = view.x
         startY = view.y
+
+        // set object animators
+        val credSlideY = ObjectAnimator.ofFloat(view, "translationY", screenHeight+500f)
+            .apply {
+                interpolator = FastOutSlowInInterpolator()
+                duration = 600
+            }
+        val dropSlideY = ObjectAnimator.ofFloat(dropView, "translationY", screenHeight+500f)
+            .apply {
+                interpolator = FastOutSlowInInterpolator()
+                duration = 600
+            }
+
+        // animation set to play both animation together
+        val animationSet = AnimatorSet()
+        animationSet.playTogether(credSlideY, dropSlideY)
 
         view.setOnTouchListener{_, event ->
             when(event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = event.x
                     startY = event.y
+
+                    // TODO: also vibrate the button
 
                     ballAnimY.cancel()
                     true
@@ -76,7 +101,11 @@ class DragViewModel(
                         view.y = dropView.y
                         isDropped.postValue(true)
 
-                        Toast.makeText(view.context, "Reached" , Toast.LENGTH_SHORT).show()
+                        // after dropping it I have to animate them to slide down so as the loader is visible
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            animationSet.start()
+                        }, 600)
+
 
                     }else{
                         isDropped.postValue(false)

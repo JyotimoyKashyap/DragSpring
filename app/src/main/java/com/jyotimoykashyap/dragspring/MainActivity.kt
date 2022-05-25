@@ -1,6 +1,7 @@
 package com.jyotimoykashyap.dragspring
 
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, viewModelProviderFactory)
             .get(DragViewModel::class.java)
 
-        viewModel.detectDragOnView(binding.dropView)
+        viewModel.detectDragOnView(binding.dropView, resources.displayMetrics.heightPixels.toFloat())
 
         viewModel.isDropped.observe(this, Observer {
             when(it) {
