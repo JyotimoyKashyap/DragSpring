@@ -1,5 +1,11 @@
 package com.jyotimoykashyap.dragspring.ui
 
+import android.util.Log
+import android.view.View
+import androidx.core.view.doOnLayout
+import androidx.dynamicanimation.animation.DynamicAnimation
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,10 +16,36 @@ import kotlinx.coroutines.launch
 import retrofit2.Response
 
 class DragViewModel(
-    val restRepository: RestRepository
+    val restRepository: RestRepository, view: View
 ) : ViewModel(){
 
     val case: MutableLiveData<Resource<ApiResponse>> = MutableLiveData()
+
+    // variables for coordinates
+    private var startX : Float? = null
+    private var startY : Float? = null
+
+    // animation variables
+    lateinit var ballAnimY: SpringAnimation
+
+    init {
+        view.doOnLayout {
+            // extract values of x and y when the widget is drawn on the canvas
+            startX = it.x
+            startY = it.y
+
+            Log.i(TAG, "x : $startX\ny : $startY")
+
+            ballAnimY = SpringAnimation(it, DynamicAnimation.TRANSLATION_Y).apply {
+                spring = startY?.let { y ->
+                    SpringForce(y).apply {
+                        dampingRatio = SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY
+                        stiffness = SpringForce.STIFFNESS_MEDIUM
+                    }
+                }
+            }
+        }
+    }
 
 
     fun getSuccessCase() = viewModelScope.launch {
@@ -42,6 +74,10 @@ class DragViewModel(
         }
 
         return Resource.Error(response.message())
+    }
+
+    companion object {
+        const val TAG = "dragviewmodel"
     }
 
 }

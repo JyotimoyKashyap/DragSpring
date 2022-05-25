@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.core.view.doOnLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.jyotimoykashyap.dragspring.databinding.ActivityMainBinding
@@ -27,12 +28,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val repository = RestRepository()
-        val viewModelProviderFactory = DragViewModelProviderFactory(repository)
+        val viewModelProviderFactory = DragViewModelProviderFactory(repository, binding.dragView)
         viewModel = ViewModelProvider(this, viewModelProviderFactory)
             .get(DragViewModel::class.java)
 
-        // view model success network call
-        viewModel.getSuccessCase()
 
         viewModel.case.observe(this, Observer {
             when(it) {
