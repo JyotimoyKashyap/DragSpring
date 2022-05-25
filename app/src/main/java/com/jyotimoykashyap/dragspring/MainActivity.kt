@@ -10,12 +10,10 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import android.window.SplashScreen
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.animation.addListener
-import androidx.core.animation.doOnEnd
-import androidx.core.content.getSystemService
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.core.view.doOnLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.jyotimoykashyap.dragspring.databinding.ActivityMainBinding
@@ -24,6 +22,8 @@ import com.jyotimoykashyap.dragspring.repository.RestRepository
 import com.jyotimoykashyap.dragspring.ui.DragViewModel
 import com.jyotimoykashyap.dragspring.ui.DragViewModelProviderFactory
 import com.jyotimoykashyap.dragspring.util.Resource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,6 +36,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+
+        installSplashScreen()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
