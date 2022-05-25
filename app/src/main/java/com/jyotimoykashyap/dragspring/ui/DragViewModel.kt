@@ -2,9 +2,7 @@ package com.jyotimoykashyap.dragspring.ui
 
 import android.animation.*
 import android.annotation.SuppressLint
-import android.os.Build
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -65,7 +63,11 @@ class DragViewModel(
     }
 
     @SuppressLint("ClickableViewAccessibility", "Recycle")
-    fun detectDragOnView(dropView: View, screenHeight: Float) = viewModelScope.launch {
+    fun detectDragOnView(
+        dropView: View,
+        screenHeight: Float,
+        vibrate: Vibrator
+    ) = viewModelScope.launch {
         startX = view.x
         startY = view.y
 
@@ -83,6 +85,14 @@ class DragViewModel(
                     startY = event.y
 
                     // TODO: also vibrate the button
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vibrate.vibrate(
+                            VibrationEffect.createOneShot(
+                                30,
+                                VibrationEffect.EFFECT_TICK
+                            )
+                        )
+                    }
 
                     ballAnimY.cancel()
                     true
@@ -100,6 +110,15 @@ class DragViewModel(
                         // fling to the drop position
                         view.y = dropView.y
                         isDropped.postValue(true)
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            vibrate.vibrate(
+                                VibrationEffect.createOneShot(
+                                    60,
+                                    VibrationEffect.EFFECT_TICK
+                                )
+                            )
+                        }
 
                         // after dropping it I have to animate them to slide down so as the loader is visible
                         Handler(Looper.getMainLooper()).postDelayed({

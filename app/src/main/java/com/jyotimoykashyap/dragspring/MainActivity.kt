@@ -1,7 +1,9 @@
 package com.jyotimoykashyap.dragspring
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.os.Bundle
+import android.os.Vibrator
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
@@ -9,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
+import androidx.core.content.getSystemService
 import androidx.core.view.WindowCompat
 import androidx.core.view.doOnLayout
 import androidx.lifecycle.Observer
@@ -44,7 +47,11 @@ class MainActivity : AppCompatActivity() {
             .get(DragViewModel::class.java)
 
         Log.i("screen" , "display height: ")
-        viewModel.detectDragOnView(binding.dropView, resources.displayMetrics.heightPixels.toFloat())
+        viewModel.detectDragOnView(
+            binding.dropView,
+            resources.displayMetrics.heightPixels.toFloat(),
+            baseContext.getSystemService(VIBRATOR_SERVICE) as Vibrator
+        )
 
         viewModel.isDropped.observe(this, Observer {
             when(it) {
@@ -98,16 +105,7 @@ class MainActivity : AppCompatActivity() {
 
         // handle switch material
         binding.switchMaterial.setOnCheckedChangeListener{buttonView, isChecked ->
-            when(isChecked) {
-                true -> {
-                    // change color of the thumb
-                }
-                false -> {
-                    // change color of the thumb
-                }
-                else -> { }
-            }
-
+            binding.caseTextview.text = " "
         }
 
         binding.caseCard.setOnClickListener{
