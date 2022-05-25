@@ -27,7 +27,9 @@ import retrofit2.Response
 
 
 class DragViewModel(
-    val restRepository: RestRepository, val view: View, val animRepository: AnimRepository
+    val restRepository: RestRepository,
+    val view: View,
+    val animRepository: AnimRepository
 ) : ViewModel(){
 
     val case: MutableLiveData<Resource<ApiResponse>> = MutableLiveData()
