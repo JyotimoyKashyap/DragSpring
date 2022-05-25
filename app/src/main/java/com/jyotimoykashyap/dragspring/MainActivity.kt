@@ -2,6 +2,7 @@ package com.jyotimoykashyap.dragspring
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
@@ -32,12 +33,28 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, viewModelProviderFactory)
             .get(DragViewModel::class.java)
 
+        viewModel.detectDragOnView(binding.dropView)
+
+        viewModel.isDropped.observe(this, Observer {
+            when(it) {
+                true -> {
+                    // make the api call
+                    viewModel.getSuccessCase()
+                    binding.caseTextview.visibility = View.VISIBLE
+                }
+                false -> {
+                    binding.caseTextview.visibility = View.INVISIBLE
+                }
+                else -> { }
+            }
+        })
 
         viewModel.case.observe(this, Observer {
             when(it) {
                 is Resource.Success -> {
                     it.data?.let {
                         Log.d(TAG, it.success.toString())
+                        binding.caseTextview.text = if(it.success) "success" else "failure"
                     }
                 }
                 is Resource.Loading -> {

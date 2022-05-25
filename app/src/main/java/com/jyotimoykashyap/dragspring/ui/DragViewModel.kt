@@ -1,7 +1,11 @@
 package com.jyotimoykashyap.dragspring.ui
 
+import android.annotation.SuppressLint
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.doOnLayout
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -16,24 +20,21 @@ import kotlinx.coroutines.launch
 import retrofit2.Response
 
 class DragViewModel(
-    val restRepository: RestRepository, view: View
+    val restRepository: RestRepository, val view: View
 ) : ViewModel(){
 
     val case: MutableLiveData<Resource<ApiResponse>> = MutableLiveData()
+    val isDropped: MutableLiveData<Boolean> = MutableLiveData(false)
 
     // variables for coordinates
     private var startX : Float? = null
     private var startY : Float? = null
 
     // animation variables
-    lateinit var ballAnimY: SpringAnimation
+    private lateinit var ballAnimY: SpringAnimation
 
     init {
         view.doOnLayout {
-            // extract values of x and y when the widget is drawn on the canvas
-            startX = it.x
-            startY = it.y
-
             Log.i(TAG, "x : $startX\ny : $startY")
 
             ballAnimY = SpringAnimation(it, DynamicAnimation.TRANSLATION_Y).apply {
@@ -43,6 +44,48 @@ class DragViewModel(
                         stiffness = SpringForce.STIFFNESS_MEDIUM
                     }
                 }
+            }
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun detectDragOnView(dropView: View) = viewModelScope.launch {
+        startX = view.x
+        startY = view.y
+
+        view.setOnTouchListener{_, event ->
+            when(event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.x
+                    startY = event.y
+
+                    ballAnimY.cancel()
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    view.y += event.y - startY!!
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    Log.i(TAG, "starty : $startY\nviewy : ${view.y}" )
+                    // start the animation
+                    if(dropView.y + 150f > view.y &&
+                        dropView.y - 150f < view.y){
+
+                        // fling to the drop position
+                        view.y = dropView.y
+                        isDropped.postValue(true)
+
+                        Toast.makeText(view.context, "Reached" , Toast.LENGTH_SHORT).show()
+
+                    }else{
+                        isDropped.postValue(false)
+                        ballAnimY.start()
+                    }
+
+                    true
+                }
+                else -> false
             }
         }
     }

@@ -15,6 +15,9 @@
         android:layout_height="280dp"
         android:layout_margin="24dp"
         app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        android:outlineAmbientShadowColor="#535353"
+        android:outlineSpotShadowColor="#535353"
         style="?attr/materialCardViewElevatedStyle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,13 +38,14 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/drag_view"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        app:cardCornerRadius="40dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:cardCornerRadius="50dp"
         app:cardBackgroundColor="#1C1C1C"
+        app:cardElevation="8dp"
         style="?attr/materialCardViewElevatedStyle"
-        android:outlineAmbientShadowColor="#919191"
-        android:outlineSpotShadowColor="#919191"
+        android:outlineAmbientShadowColor="#535353"
+        android:outlineSpotShadowColor="#535353"
         app:layout_constraintBottom_toBottomOf="@id/case_card"
         app:layout_constraintTop_toBottomOf="@id/case_card"
         app:layout_constraintStart_toStartOf="@id/case_card"
@@ -50,7 +54,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="12dp"
+            android:layout_margin="16dp"
             android:src="@drawable/cred"/>
 
     </com.google.android.material.card.MaterialCardView>
@@ -64,9 +68,9 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/drop_view"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        app:cardCornerRadius="40dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:cardCornerRadius="50dp"
         android:layout_marginTop="10dp"
         style="?attr/materialCardViewElevatedStyle"
         android:outlineAmbientShadowColor="#454545"
