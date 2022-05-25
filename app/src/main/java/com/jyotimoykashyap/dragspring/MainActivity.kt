@@ -1,11 +1,14 @@
 package com.jyotimoykashyap.dragspring
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import androidx.core.view.WindowCompat
 import androidx.core.view.doOnLayout
 import androidx.lifecycle.Observer
@@ -22,12 +25,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: DragViewModel
 
+    var firstTimeOpen : Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // get the original coordinates
+
 
         val repository = RestRepository()
         val viewModelProviderFactory = DragViewModelProviderFactory(repository, binding.dragView)
@@ -65,6 +73,7 @@ class MainActivity : AppCompatActivity() {
                     // failure case here
                     binding.caseTextview.text = "failure"
                     // reverse all the animations
+                    viewModel.reverseOnFailure(binding.dragView)
 
                 }
             }
@@ -74,10 +83,10 @@ class MainActivity : AppCompatActivity() {
         binding.switchMaterial.setOnCheckedChangeListener{buttonView, isChecked ->
             when(isChecked) {
                 true -> {
-                    // change the network call
+                    // change color of the thumb
                 }
                 false -> {
-                    // change the network call
+                    // change color of the thumb
                 }
                 else -> { }
             }
@@ -87,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun makeApiCall() {
+    private fun makeApiCall() {
         if(binding.switchMaterial.isChecked) {
             // failure case
             viewModel.getFailureCase()

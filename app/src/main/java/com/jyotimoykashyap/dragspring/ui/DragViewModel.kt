@@ -1,5 +1,7 @@
 package com.jyotimoykashyap.dragspring.ui
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
@@ -10,6 +12,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnLayout
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -35,13 +39,18 @@ class DragViewModel(
     // variables for coordinates
     private var startX : Float? = null
     private var startY : Float? = null
+    private var originX: Float? = null
+    private var originY: Float? = null
 
     // animation variables
     private lateinit var ballAnimY: SpringAnimation
     private lateinit var viewSlideDown: ObjectAnimator
 
     init {
+
         view.doOnLayout {
+            originX = view.x
+            originY = view.y
             Log.i(TAG, "x : $startX\ny : $startY")
 
             ballAnimY = SpringAnimation(it, DynamicAnimation.TRANSLATION_Y).apply {
@@ -118,8 +127,43 @@ class DragViewModel(
         }
     }
 
-    fun reverseOnFailure() = viewModelScope.launch {
-        // implement the failure case
+    fun reverseOnFailure(dragView: View) = viewModelScope.launch {
+        // get the cred button to the previous location
+        Handler(Looper.getMainLooper()).postDelayed({
+            dragView.visibility = View.VISIBLE
+            view.x = originX!!
+            view.y = originY!!
+
+            // animate two properties, alpha and scale in x and y
+            val fadeIn = ObjectAnimator.ofFloat(dragView, "alpha", 0f, 1f).apply {
+                duration = ANIMATION_DURATION - 400
+                interpolator = FastOutSlowInInterpolator()
+                addListener (object : AnimatorListenerAdapter(){
+                    override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
+                        dragView.visibility = View.VISIBLE
+                    }
+                })
+            }
+
+            // animate the scale
+            val scaleX = ObjectAnimator.ofFloat(dragView, "scaleX", 0f, 1f).apply {
+                duration = ANIMATION_DURATION
+                interpolator = FastOutSlowInInterpolator()
+            }
+
+            val scaleY = ObjectAnimator.ofFloat(dragView, "scaleY", 0f, 1f).apply {
+                duration = ANIMATION_DURATION
+                interpolator = FastOutSlowInInterpolator()
+            }
+
+            AnimatorSet().apply {
+                playTogether(fadeIn, scaleX, scaleY)
+                start()
+            }
+
+            viewSlideDown.reverse()
+
+        }, ANIMATION_DURATION)
     }
 
 
@@ -154,6 +198,7 @@ class DragViewModel(
 
     companion object {
         const val TAG = "dragviewmodel"
+        const val ANIMATION_DURATION = 600L
     }
 
 }
