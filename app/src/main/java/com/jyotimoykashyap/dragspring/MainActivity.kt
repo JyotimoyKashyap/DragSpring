@@ -17,6 +17,7 @@ import androidx.core.view.doOnLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.jyotimoykashyap.dragspring.databinding.ActivityMainBinding
+import com.jyotimoykashyap.dragspring.repository.AnimRepository
 import com.jyotimoykashyap.dragspring.repository.RestRepository
 import com.jyotimoykashyap.dragspring.ui.DragViewModel
 import com.jyotimoykashyap.dragspring.ui.DragViewModelProviderFactory
@@ -41,8 +42,21 @@ class MainActivity : AppCompatActivity() {
         binding.loader.visibility = View.INVISIBLE
 
 
+        // init the repository classes
         val repository = RestRepository()
-        val viewModelProviderFactory = DragViewModelProviderFactory(repository, binding.dragView)
+        val animRepository = AnimRepository(
+            binding.dragView,
+            binding.dropView,
+            resources.displayMetrics.heightPixels.toFloat()
+        )
+
+
+        val viewModelProviderFactory = DragViewModelProviderFactory(
+            repository,
+            binding.dragView,
+            animRepository
+        )
+
         viewModel = ViewModelProvider(this, viewModelProviderFactory)
             .get(DragViewModel::class.java)
 

@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.airbnb.lottie.LottieAnimationView
 import com.jyotimoykashyap.dragspring.model.ApiResponse
+import com.jyotimoykashyap.dragspring.repository.AnimRepository
 import com.jyotimoykashyap.dragspring.repository.RestRepository
 import com.jyotimoykashyap.dragspring.util.Resource
 import kotlinx.coroutines.launch
@@ -26,7 +27,7 @@ import retrofit2.Response
 
 
 class DragViewModel(
-    val restRepository: RestRepository, val view: View
+    val restRepository: RestRepository, val view: View, val animRepository: AnimRepository
 ) : ViewModel(){
 
     val case: MutableLiveData<Resource<ApiResponse>> = MutableLiveData()
@@ -41,9 +42,6 @@ class DragViewModel(
     // animation variables
     private lateinit var ballAnimY: SpringAnimation
     private lateinit var viewSlideDown: ObjectAnimator
-    private lateinit var expandCard: ValueAnimator
-    private lateinit var translateCard: ObjectAnimator
-    private lateinit var textSlideUp: ObjectAnimator
 
     init {
 
@@ -147,78 +145,13 @@ class DragViewModel(
         height: Float,
         constraintLayout: ConstraintLayout
     ) = viewModelScope.launch {
-        // translate the card such that it goes to the middle
-        // while expanding its height
-        expandCard = ValueAnimator.ofInt(cardView.height, height.toInt() - 300).apply {
-            duration = ANIMATION_DURATION - 100
-            interpolator = OvershootInterpolator()
-            addUpdateListener {
-                val animatedValue = it.animatedValue
-                cardView.layoutParams.height = animatedValue as Int
-                cardView.requestLayout()
-            }
-        }
 
-        // translating the card
-        translateCard = ObjectAnimator.ofFloat(
+        animRepository.animateOnSuccess(
             cardView,
-            "y",
-            cardView.y,
-            (constraintLayout.y + 200)
-        ).apply {
-            duration = ANIMATION_DURATION - 300
-            interpolator = FastOutSlowInInterpolator()
-        }
-
-        AnimatorSet().apply {
-            playTogether(translateCard, expandCard)
-            start()
-        }
+            height,
+            constraintLayout
+        )
     }
-
-    // reset the window
-    fun reset(dragView: View) = viewModelScope.launch {
-        dragView.visibility = View.VISIBLE
-        view.x = originX!!
-        view.y = originY!!
-
-        /**
-         * Drag View reverse animation
-         */
-        // animate two properties, alpha and scale in x and y
-        val fadeIn = ObjectAnimator.ofFloat(dragView, "alpha", 0f, 1f).apply {
-            duration = ANIMATION_DURATION - 400
-            interpolator = FastOutSlowInInterpolator()
-            addListener (object : AnimatorListenerAdapter(){
-                override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
-                    dragView.visibility = View.VISIBLE
-                }
-            })
-        }
-
-        // animate the scale for drag view
-        val scaleX = ObjectAnimator.ofFloat(dragView, "scaleX", 0f, 1f).apply {
-            duration = ANIMATION_DURATION
-            interpolator = FastOutSlowInInterpolator()
-        }
-
-        val scaleY = ObjectAnimator.ofFloat(dragView, "scaleY", 0f, 1f).apply {
-            duration = ANIMATION_DURATION
-            interpolator = FastOutSlowInInterpolator()
-        }
-
-        AnimatorSet().apply {
-            playTogether(fadeIn, scaleX, scaleY)
-            start()
-        }
-        viewSlideDown.reverse()
-
-
-        // reverse animation for the success card
-        expandCard.reverse()
-        translateCard.reverse()
-    }
-
 
     // animation in case of failure case
     fun reverseOnFailure(dragView: View, lottieAnimationView: LottieAnimationView) = viewModelScope.launch {
@@ -258,15 +191,11 @@ class DragViewModel(
             lottieAnimationView.visibility = View.INVISIBLE
 
         }, ANIMATION_DURATION)
+
     }
 
     fun slideUpTextAnimation(view: View) = viewModelScope.launch {
-        ObjectAnimator.ofFloat(view, "translationY" , 500f, 0f)
-            .apply {
-                duration = 400
-                interpolator = FastOutSlowInInterpolator()
-                start()
-            }
+        animRepository.slideUpTextAnimation(view)
     }
 
     /**
