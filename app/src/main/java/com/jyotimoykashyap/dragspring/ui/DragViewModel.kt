@@ -43,6 +43,7 @@ class DragViewModel(
     private lateinit var viewSlideDown: ObjectAnimator
     private lateinit var expandCard: ValueAnimator
     private lateinit var translateCard: ObjectAnimator
+    private lateinit var textSlideUp: ObjectAnimator
 
     init {
 
@@ -258,6 +259,19 @@ class DragViewModel(
 
         }, ANIMATION_DURATION)
     }
+
+    fun slideUpTextAnimation(view: View) = viewModelScope.launch {
+        ObjectAnimator.ofFloat(view, "translationY" , 500f, 0f)
+            .apply {
+                duration = 400
+                interpolator = FastOutSlowInInterpolator()
+                start()
+            }
+    }
+
+    /**
+     * API calls and its responses handling
+     */
 
 
     fun getSuccessCase() = viewModelScope.launch {

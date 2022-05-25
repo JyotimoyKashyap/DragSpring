@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, it.success.toString())
                         needReset = true
                         binding.caseTextview.text = if(it.success) "success" else "failure"
+                        viewModel.slideUpTextAnimation(binding.caseTextview)
                         viewModel.animateOnSuccess(
                             binding.caseCard,
                             resources.displayMetrics.heightPixels.toFloat() - 200f,
@@ -96,6 +97,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Something went wrong!" ,Toast.LENGTH_SHORT).show()
                     needReset = false
                     binding.caseTextview.text = "failure"
+                    viewModel.slideUpTextAnimation(binding.caseTextview)
                     // reverse all the animations
                     viewModel.reverseOnFailure(binding.dragView, binding.loader)
                     binding.loader.visibility = View.INVISIBLE
