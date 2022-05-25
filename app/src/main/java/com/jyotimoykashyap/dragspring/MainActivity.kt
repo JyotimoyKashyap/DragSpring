@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             when(it) {
                 true -> {
                     // make the api call
-                    viewModel.getSuccessCase()
+                    makeApiCall()
                     binding.caseTextview.visibility = View.VISIBLE
                 }
                 false -> {
@@ -62,14 +62,39 @@ class MainActivity : AppCompatActivity() {
                     // implement loader here
                 }
                 is Resource.Error -> {
-                    Toast.makeText(this, "Something went wrong" , Toast.LENGTH_SHORT).show()
+                    // failure case here
+                    binding.caseTextview.text = "failure"
+                    // reverse all the animations
+
                 }
             }
         })
 
+        // handle switch material
+        binding.switchMaterial.setOnCheckedChangeListener{buttonView, isChecked ->
+            when(isChecked) {
+                true -> {
+                    // change the network call
+                }
+                false -> {
+                    // change the network call
+                }
+                else -> { }
+            }
+
+        }
 
 
+    }
 
+    fun makeApiCall() {
+        if(binding.switchMaterial.isChecked) {
+            // failure case
+            viewModel.getFailureCase()
+        }else {
+            // success case
+            viewModel.getSuccessCase()
+        }
     }
 
     companion object{

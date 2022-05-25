@@ -66,15 +66,11 @@ class DragViewModel(
                 interpolator = FastOutSlowInInterpolator()
                 duration = 600
             }
-        val dropSlideY = ObjectAnimator.ofFloat(dropView, "translationY", screenHeight+500f)
+        viewSlideDown = ObjectAnimator.ofFloat(dropView, "translationY", screenHeight+500f)
             .apply {
                 interpolator = FastOutSlowInInterpolator()
                 duration = 600
             }
-
-        // animation set to play both animation together
-        val animationSet = AnimatorSet()
-        animationSet.playTogether(credSlideY, dropSlideY)
 
         view.setOnTouchListener{_, event ->
             when(event.actionMasked) {
@@ -101,9 +97,12 @@ class DragViewModel(
                         view.y = dropView.y
                         isDropped.postValue(true)
 
+
+
                         // after dropping it I have to animate them to slide down so as the loader is visible
                         Handler(Looper.getMainLooper()).postDelayed({
-                            animationSet.start()
+                            view.visibility = View.INVISIBLE
+                            viewSlideDown.start()
                         }, 600)
 
 
@@ -117,6 +116,10 @@ class DragViewModel(
                 else -> false
             }
         }
+    }
+
+    fun reverseOnFailure() = viewModelScope.launch {
+        // implement the failure case
     }
 
 
@@ -141,6 +144,7 @@ class DragViewModel(
     private fun handleResponse(response: Response<ApiResponse>) : Resource<ApiResponse>{
         if(response.isSuccessful){
             response.body()?.let {
+                Log.d("networkcall", it.success.toString())
                 return Resource.Success(it)
             }
         }
