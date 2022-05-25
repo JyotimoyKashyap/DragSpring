@@ -6,8 +6,6 @@ import android.os.*
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.BounceInterpolator
-import android.view.animation.OvershootInterpolator
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.doOnLayout
 import androidx.dynamicanimation.animation.DynamicAnimation
