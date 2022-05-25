@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, viewModelProviderFactory)
             .get(DragViewModel::class.java)
 
+        Log.i("screen" , "display height: ")
         viewModel.detectDragOnView(binding.dropView, resources.displayMetrics.heightPixels.toFloat())
 
         viewModel.isDropped.observe(this, Observer {
@@ -64,6 +65,11 @@ class MainActivity : AppCompatActivity() {
                     it.data?.let {
                         Log.d(TAG, it.success.toString())
                         binding.caseTextview.text = if(it.success) "success" else "failure"
+                        viewModel.animateOnSuccess(
+                            binding.caseCard,
+                            resources.displayMetrics.heightPixels.toFloat() - 200f,
+                            binding.constraintLayout
+                        )
                     }
                 }
                 is Resource.Loading -> {

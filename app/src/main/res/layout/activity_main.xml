@@ -7,7 +7,8 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity"
-    android:background="#1B1B1B">
+    android:background="#1B1B1B"
+    android:id="@+id/constraint_layout">
 
     <com.google.android.material.textview.MaterialTextView
         android:layout_width="wrap_content"
@@ -37,7 +38,6 @@
         android:id="@+id/switchMaterial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/case_card"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

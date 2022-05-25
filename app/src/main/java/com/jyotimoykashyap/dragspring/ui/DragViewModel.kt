@@ -1,19 +1,16 @@
 package com.jyotimoykashyap.dragspring.ui
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
+import android.animation.*
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.animation.addListener
-import androidx.core.animation.doOnEnd
+import android.view.animation.BounceInterpolator
+import android.view.animation.OvershootInterpolator
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.doOnLayout
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -25,9 +22,9 @@ import androidx.lifecycle.viewModelScope
 import com.jyotimoykashyap.dragspring.model.ApiResponse
 import com.jyotimoykashyap.dragspring.repository.RestRepository
 import com.jyotimoykashyap.dragspring.util.Resource
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Response
+
 
 class DragViewModel(
     val restRepository: RestRepository, val view: View
@@ -45,6 +42,8 @@ class DragViewModel(
     // animation variables
     private lateinit var ballAnimY: SpringAnimation
     private lateinit var viewSlideDown: ObjectAnimator
+    private lateinit var expandCard: ValueAnimator
+    private lateinit var translateCard: ObjectAnimator
 
     init {
 
@@ -70,11 +69,6 @@ class DragViewModel(
         startY = view.y
 
         // set object animators
-        val credSlideY = ObjectAnimator.ofFloat(view, "translationY", screenHeight+500f)
-            .apply {
-                interpolator = FastOutSlowInInterpolator()
-                duration = 600
-            }
         viewSlideDown = ObjectAnimator.ofFloat(dropView, "translationY", screenHeight+500f)
             .apply {
                 interpolator = FastOutSlowInInterpolator()
@@ -106,8 +100,6 @@ class DragViewModel(
                         view.y = dropView.y
                         isDropped.postValue(true)
 
-
-
                         // after dropping it I have to animate them to slide down so as the loader is visible
                         Handler(Looper.getMainLooper()).postDelayed({
                             view.visibility = View.INVISIBLE
@@ -127,6 +119,40 @@ class DragViewModel(
         }
     }
 
+    // animation in case of success case
+    // card expand animation
+    fun animateOnSuccess(cardView: View, height: Float, constraintLayout: ConstraintLayout) = viewModelScope.launch {
+        // translate the card such that it goes to the middle
+        // while expanding its height
+        expandCard = ValueAnimator.ofInt(cardView.height, height.toInt() - 300).apply {
+            duration = ANIMATION_DURATION - 100
+            interpolator = OvershootInterpolator()
+            addUpdateListener {
+                val animatedValue = it.animatedValue
+                cardView.layoutParams.height = animatedValue as Int
+                cardView.requestLayout()
+            }
+        }
+
+        // translating the card
+        translateCard = ObjectAnimator.ofFloat(
+            cardView,
+            "y",
+            cardView.y,
+            (constraintLayout.y + 200)
+        ).apply {
+            duration = ANIMATION_DURATION - 300
+            interpolator = FastOutSlowInInterpolator()
+        }
+
+        AnimatorSet().apply {
+            playTogether(translateCard, expandCard)
+            start()
+        }
+    }
+
+
+    // animation in case of failure case
     fun reverseOnFailure(dragView: View) = viewModelScope.launch {
         // get the cred button to the previous location
         Handler(Looper.getMainLooper()).postDelayed({
@@ -160,7 +186,6 @@ class DragViewModel(
                 playTogether(fadeIn, scaleX, scaleY)
                 start()
             }
-
             viewSlideDown.reverse()
 
         }, ANIMATION_DURATION)
