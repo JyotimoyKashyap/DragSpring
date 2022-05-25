@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: DragViewModel
 
-    var firstTimeOpen : Boolean = true
+    var needReset : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -34,7 +34,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // get the original coordinates
+        // hide the loader
+        binding.loader.visibility = View.INVISIBLE
 
 
         val repository = RestRepository()
@@ -64,23 +65,33 @@ class MainActivity : AppCompatActivity() {
                 is Resource.Success -> {
                     it.data?.let {
                         Log.d(TAG, it.success.toString())
+                        needReset = true
                         binding.caseTextview.text = if(it.success) "success" else "failure"
                         viewModel.animateOnSuccess(
                             binding.caseCard,
                             resources.displayMetrics.heightPixels.toFloat() - 200f,
                             binding.constraintLayout
                         )
+                        binding.loader.visibility = View.INVISIBLE
                     }
                 }
                 is Resource.Loading -> {
+                    needReset = false
                     // implement loader here
+                    binding.run {
+                        loader.visibility = View.VISIBLE
+                        loader.playAnimation()
+                    }
+
                 }
                 is Resource.Error -> {
                     // failure case here
+                    Toast.makeText(this, "Something went wrong!" ,Toast.LENGTH_SHORT).show()
+                    needReset = false
                     binding.caseTextview.text = "failure"
                     // reverse all the animations
-                    viewModel.reverseOnFailure(binding.dragView)
-
+                    viewModel.reverseOnFailure(binding.dragView, binding.loader)
+                    binding.loader.visibility = View.INVISIBLE
                 }
             }
         })
@@ -97,6 +108,17 @@ class MainActivity : AppCompatActivity() {
                 else -> { }
             }
 
+        }
+
+        binding.caseCard.setOnClickListener{
+            if(needReset){
+//                viewModel.reset(binding.dragView)
+//                needReset = false
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(getIntent());
+                overridePendingTransition(0, 0);
+            }
         }
 
 

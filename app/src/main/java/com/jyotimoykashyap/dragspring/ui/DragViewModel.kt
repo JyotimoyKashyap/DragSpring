@@ -19,6 +19,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.airbnb.lottie.LottieAnimationView
 import com.jyotimoykashyap.dragspring.model.ApiResponse
 import com.jyotimoykashyap.dragspring.repository.RestRepository
 import com.jyotimoykashyap.dragspring.util.Resource
@@ -121,7 +122,11 @@ class DragViewModel(
 
     // animation in case of success case
     // card expand animation
-    fun animateOnSuccess(cardView: View, height: Float, constraintLayout: ConstraintLayout) = viewModelScope.launch {
+    fun animateOnSuccess(
+        cardView: View,
+        height: Float,
+        constraintLayout: ConstraintLayout
+    ) = viewModelScope.launch {
         // translate the card such that it goes to the middle
         // while expanding its height
         expandCard = ValueAnimator.ofInt(cardView.height, height.toInt() - 300).apply {
@@ -151,9 +156,52 @@ class DragViewModel(
         }
     }
 
+    // reset the window
+    fun reset(dragView: View) = viewModelScope.launch {
+        dragView.visibility = View.VISIBLE
+        view.x = originX!!
+        view.y = originY!!
+
+        /**
+         * Drag View reverse animation
+         */
+        // animate two properties, alpha and scale in x and y
+        val fadeIn = ObjectAnimator.ofFloat(dragView, "alpha", 0f, 1f).apply {
+            duration = ANIMATION_DURATION - 400
+            interpolator = FastOutSlowInInterpolator()
+            addListener (object : AnimatorListenerAdapter(){
+                override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
+                    dragView.visibility = View.VISIBLE
+                }
+            })
+        }
+
+        // animate the scale for drag view
+        val scaleX = ObjectAnimator.ofFloat(dragView, "scaleX", 0f, 1f).apply {
+            duration = ANIMATION_DURATION
+            interpolator = FastOutSlowInInterpolator()
+        }
+
+        val scaleY = ObjectAnimator.ofFloat(dragView, "scaleY", 0f, 1f).apply {
+            duration = ANIMATION_DURATION
+            interpolator = FastOutSlowInInterpolator()
+        }
+
+        AnimatorSet().apply {
+            playTogether(fadeIn, scaleX, scaleY)
+            start()
+        }
+        viewSlideDown.reverse()
+
+
+        // reverse animation for the success card
+        expandCard.reverse()
+        translateCard.reverse()
+    }
+
 
     // animation in case of failure case
-    fun reverseOnFailure(dragView: View) = viewModelScope.launch {
+    fun reverseOnFailure(dragView: View, lottieAnimationView: LottieAnimationView) = viewModelScope.launch {
         // get the cred button to the previous location
         Handler(Looper.getMainLooper()).postDelayed({
             dragView.visibility = View.VISIBLE
@@ -187,6 +235,7 @@ class DragViewModel(
                 start()
             }
             viewSlideDown.reverse()
+            lottieAnimationView.visibility = View.INVISIBLE
 
         }, ANIMATION_DURATION)
     }
