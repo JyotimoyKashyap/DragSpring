@@ -6,8 +6,12 @@ import android.os.Looper
 import android.os.Vibrator
 import android.util.Log
 import android.view.View
+import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.BounceInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnLayout
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -36,6 +40,10 @@ class AnimRepository(
     private lateinit var expandCard: ValueAnimator
     private lateinit var translateCard: ObjectAnimator
     private lateinit var viewSlideDown: ObjectAnimator
+    private lateinit var textSlideUp: ObjectAnimator
+    private lateinit var fadeIn: ObjectAnimator
+    private lateinit var scaleX: ObjectAnimator
+    private lateinit var scaleY: ObjectAnimator
 
     init {
         view.doOnLayout {
@@ -65,7 +73,7 @@ class AnimRepository(
 
     // text slide up animation
     fun slideUpTextAnimation(view: View) {
-        ObjectAnimator.ofFloat(view, "translationY" , 500f, 0f)
+        textSlideUp = ObjectAnimator.ofFloat(view, "translationY" , 500f, 0f)
             .apply {
                 duration = 400
                 interpolator = FastOutSlowInInterpolator()
@@ -77,7 +85,9 @@ class AnimRepository(
     fun animateOnSuccess(
         cardView: View,
         height: Float,
-        constraintLayout: ConstraintLayout
+        constraintLayout: ConstraintLayout,
+        credLogo: View,
+        lottieAnimationView: LottieAnimationView
     ) {
         // translate the card such that it goes to the middle
         // while expanding its height
@@ -102,10 +112,81 @@ class AnimRepository(
             interpolator = FastOutSlowInInterpolator()
         }
 
+        brandPopAnim(credLogo)
+
+        // animation for the cred logo brand
+        // animate two properties, alpha and scale in x and y
+        val fadeInLottie = ObjectAnimator.ofFloat(lottieAnimationView, "alpha", 0f, 1f).apply {
+            duration = DragViewModel.ANIMATION_DURATION - 400
+            interpolator = FastOutSlowInInterpolator()
+            addListener (object : AnimatorListenerAdapter(){
+                override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
+                    lottieAnimationView.visibility = View.VISIBLE
+                    lottieAnimationView.playAnimation()
+                }
+            })
+        }
+
+        // animate the scale
+        val scaleXLottie = ObjectAnimator.ofFloat(lottieAnimationView, "scaleX", 0f, 1f).apply {
+            duration = DragViewModel.ANIMATION_DURATION
+            interpolator = AnticipateOvershootInterpolator()
+        }
+
+        val scaleYLottie = ObjectAnimator.ofFloat(lottieAnimationView, "scaleY", 0f, 1f).apply {
+            duration = DragViewModel.ANIMATION_DURATION
+            interpolator = AnticipateOvershootInterpolator()
+        }
+
         AnimatorSet().apply {
             playTogether(translateCard, expandCard)
             start()
+            addListener(object : AnimatorListenerAdapter(){
+                override fun onAnimationEnd(animation: Animator?) {
+                    super.onAnimationEnd(animation)
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        // reverse the text slide
+                        textSlideUp.reverse()
+                        // play the scale animation for cred logo
+                        AnimatorSet().apply {
+                            playTogether(fadeIn, scaleX, scaleY, fadeInLottie, scaleXLottie, scaleYLottie)
+                            start()
+                        }
+                    }, 500)
+                }
+            })
         }
+
+
+
+
+    }
+
+    fun brandPopAnim(view: View){
+        // animation for the cred logo brand
+        // animate two properties, alpha and scale in x and y
+        fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f).apply {
+            duration = DragViewModel.ANIMATION_DURATION - 400
+            interpolator = FastOutSlowInInterpolator()
+            addListener (object : AnimatorListenerAdapter(){
+                override fun onAnimationEnd(animation: Animator?, isReverse: Boolean) {
+                    view.visibility = View.VISIBLE
+                }
+            })
+        }
+
+        // animate the scale
+        scaleX = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f).apply {
+            duration = DragViewModel.ANIMATION_DURATION
+            interpolator = AnticipateOvershootInterpolator()
+        }
+
+        scaleY = ObjectAnimator.ofFloat(view, "scaleY", 0f, 1f).apply {
+            duration = DragViewModel.ANIMATION_DURATION
+            interpolator = AnticipateOvershootInterpolator()
+        }
+
     }
 
 }

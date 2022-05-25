@@ -62,18 +62,49 @@
         app:layout_constraintBottom_toTopOf="@id/guideline1"
         app:layout_constraintTop_toTopOf="parent">
 
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/splash_lottie"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            app:lottie_rawRes="@raw/splash"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            app:lottie_loop="true"/>
+
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/case_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="success"
+            android:layout_gravity="center"
+            android:layout_marginTop="40dp"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginTop="40dp"
-            android:layout_gravity="center"/>
+            tools:text="success" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cred_brand"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:cardCornerRadius="50dp"
+            app:cardBackgroundColor="#1C1C1C"
+            app:cardElevation="8dp"
+            android:visibility="invisible"
+            android:layout_gravity="center"
+            style="?attr/materialCardViewElevatedStyle"
+            android:outlineAmbientShadowColor="#535353"
+            android:outlineSpotShadowColor="#535353">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                android:src="@drawable/cred"/>
+
+        </com.google.android.material.card.MaterialCardView>
 
 
     </com.google.android.material.card.MaterialCardView>
+
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/drag_view"

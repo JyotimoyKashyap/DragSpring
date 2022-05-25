@@ -3,6 +3,8 @@ package com.jyotimoykashyap.dragspring
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Vibrator
 import android.util.DisplayMetrics
 import android.util.Log
@@ -88,11 +90,17 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, it.success.toString())
                         needReset = true
                         binding.caseTextview.text = if(it.success) "success" else "failure"
+                        binding.switchMaterial.isEnabled = false
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            Toast.makeText(this, "Please click on the card to reset", Toast.LENGTH_LONG).show()
+                        }, 6000)
                         viewModel.slideUpTextAnimation(binding.caseTextview)
                         viewModel.animateOnSuccess(
                             binding.caseCard,
                             resources.displayMetrics.heightPixels.toFloat() - 200f,
-                            binding.constraintLayout
+                            binding.constraintLayout,
+                            binding.credBrand,
+                            binding.splashLottie
                         )
                         binding.loader.visibility = View.INVISIBLE
                     }

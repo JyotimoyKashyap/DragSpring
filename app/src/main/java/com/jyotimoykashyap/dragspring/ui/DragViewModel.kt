@@ -143,13 +143,17 @@ class DragViewModel(
     fun animateOnSuccess(
         cardView: View,
         height: Float,
-        constraintLayout: ConstraintLayout
+        constraintLayout: ConstraintLayout,
+        credLogo: View,
+        lottieAnimationView: LottieAnimationView
     ) = viewModelScope.launch {
 
         animRepository.animateOnSuccess(
             cardView,
             height,
-            constraintLayout
+            constraintLayout,
+            credLogo,
+            lottieAnimationView
         )
     }
 
